@@ -76,22 +76,25 @@ Controller IP:	xx.xx.xx.xx
 The containers that power your cluster are now being downloaded.
 
 You should be able to access the Kubernetes API once the containers finish downloading.
-```
 
 From now we will work from outside the folder my-cluster
-
+```
 Connect to the cluster
-
 ```
-kubectl --kubeconfig=my-cluster/kubeconfig get nodes
+$ kubectl --kubeconfig=my-cluster/kubeconfig get nodes
 ```
-
 Launch some pods and services:
-
 ```
-kubectl --kubeconfig=my-cluster/kubeconfig create -f app/web-pod.yml
-kubectl --kubeconfig=my-cluster/kubeconfig create -f app/db-pod.yml
-kubectl --kubeconfig=my-cluster/kubeconfig create -f app/db-svc.yml
-kubectl --kubeconfig=my-cluster/kubeconfig create -f app/db-pod.yml
-kubectl --kubeconfig=my-cluster/kubeconfig create -f app/web-service.yml
+$ kubectl --kubeconfig=my-cluster/kubeconfig create -f app/web-pod.yml
+$ kubectl --kubeconfig=my-cluster/kubeconfig create -f app/db-svc.yml
+$ kubectl --kubeconfig=my-cluster/kubeconfig create -f app/db-pod.yml
+$ kubectl --kubeconfig=my-cluster/kubeconfig create -f app/web-service.yml
+```
+To find out where is the load balancer:
+```
+$ kubectl --kubeconfig=cluster-dev/kubeconfig describe services web
+```
+To scale your app:
+```
+$ kubectl --kubeconfig=cluster-dev/kubeconfig scale --replicas=2 -f app/web-deployment.yml
 ```
