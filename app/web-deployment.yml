@@ -7,10 +7,12 @@ spec:
   template:
     metadata:
       labels:
-        app: web
+          name: web
+          app: demo
+          env: staging
     spec:
       containers:
       - name: web
-        image: janakiramm/web
+        image: stealthizer/k8s-tester
         ports:
         - containerPort: 5000
