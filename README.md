@@ -1,10 +1,11 @@
 # Kubernetes on AWS
+Last updated: 2017/05/09 for kubernetes v1.6.2
 
-Following this source informations:
-https://github.com/coreos/coreos-kubernetes/tree/master/multi-node/aws
-https://coreos.com/kubernetes/docs/latest/kubernetes-on-aws.html
+Source informations:
+* https://github.com/kubernetes-incubator/kube-aws
+* https://coreos.com/kubernetes/docs/latest/kubernetes-on-aws.html
 
-source the aws account vars
+To begin, source the aws account vars (useful script provided)
 ```
 . ./export_aws.sh account
 ```
@@ -12,24 +13,34 @@ source the aws account vars
 Create a KMS key for kube-aws
 
 ```
-aws kms create-key --description="kube-aws assets"
+aws kms create-key --description="kube-aws assets" --profile awsprofile
 
 {
     "KeyMetadata": {
         "Origin": "AWS_KMS",
-        "KeyId": "xxxx",
+        "KeyId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
         "Description": "kube-aws assets",
         "Enabled": true,
         "KeyUsage": "ENCRYPT_DECRYPT",
         "KeyState": "Enabled",
         "CreationDate": 1478855628.64,
         "Arn": "arn:aws:kms:eu-west-1:xxxx:key/xxxx",
-        "AWSAccountId": "xxxx"
+        "AWSAccountId": "xxxxxxxxxxxx"
     }
 }
 ```
 
+You can add an alias to this kms key
 
+```
+aws kms create-alias --alias-name alias/kube-aws --target-key-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx --profile awsprofile
+```
+
+Create a bucket to store large cloudformation templates that the process will create
+
+```
+aws s3api create-bucket --bucket bucket-name --region eu-west-1 --create-bucket-configuration LocationConstraint=eu-west-1 --profile awsprofile
+```
 
 Initialize asset directory and create initial yaml config file
 
@@ -44,41 +55,48 @@ $ kube-aws init \
 --key-name=devops \
 --kms-key-arn="arn:aws:kms:eu-west-1:xxxx:key/xxxx"
 ```
-Render files
 
-(optional) Edit cluster.yaml to allow the creation of a dns record by specifying the next keys:
-externalDNSName: my-cluster.domain.net
-createRecordSet: true
-hostedZoneId: XXXXXXXXX
+A review of what the cluster.yaml can do is recommended, as it is highly configurable. For this example we will customize some keys:
+* under the apiEndpoints section, change the createRecordSet to true and id with the zone id from route53
 
 ```
-$ kube-aws render
+apiEndpoints:
+- 
+  name: default
+  dnsName: kube-aws.domain.net
+  loadBalancer:
+    createRecordSet: true
+    hostedZone:
+      id: "XXXXXXXXXXXXX"
 ```
 
-ensure all files have been created correctly
-
-Ensure the assets are valid:
+You can now render all needed files:
 
 ```
-$ kube-aws validate
+$ kube-aws render credentials --generate-ca
+$ kube-aws render stack
+```
+
+Ensure the created assets are valid:
+
+```
+$ kube-aws validate --s3-uri s3://bucket-name
 ```
 
 Create cluster from this asset directory:
 ```
-$ kube-aws up
-
-Creating AWS resources. This should take around 5 minutes.
-
+$ kube-aws up --s3-uri s3://bucket-name
+Creating AWS resources. Please wait. It may take a few minutes.
 Success! Your AWS resources have been created:
-Cluster Name:	my-cluster
-Controller IP:	xx.xx.xx.xx  
+Cluster Name:		cluster-kubernetes
+Controller DNS Names:	cluster-k-APIEndpo-XXXXXXXXXXXX-XXXXXXXXX.eu-west-1.elb.amazonaws.com
 
 The containers that power your cluster are now being downloaded.
 
 You should be able to access the Kubernetes API once the containers finish downloading.
-
-From now we will work from outside the folder my-cluster
 ```
+From now we will work from outside the folder my-cluster
+
 Connect to the cluster
 ```
 $ kubectl --kubeconfig=my-cluster/kubeconfig get nodes
@@ -88,7 +106,7 @@ Launch some pods and services:
 $ kubectl --kubeconfig=my-cluster/kubeconfig create -f app/web-pod.yml
 $ kubectl --kubeconfig=my-cluster/kubeconfig create -f app/db-svc.yml
 $ kubectl --kubeconfig=my-cluster/kubeconfig create -f app/db-pod.yml
-$ kubectl --kubeconfig=my-cluster/kubeconfig create -f app/web-service.yml
+$ kubectl --kubeconfig=my-cluster/kubeconfig create -f app/web-svc.yml
 ```
 To find out where is the load balancer:
 ```
