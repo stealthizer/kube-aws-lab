@@ -16,6 +16,5 @@ else
         echo -n "$account credentials exported"
     else 
         echo -n "account variables not set"
-        exit 1
     fi
 fi

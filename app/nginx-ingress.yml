@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+spec:
+  rules:
+  - host: kubertest.domain.test
+    http:
+      paths:
+      - path: /random
+        backend:
+          serviceName: web-svc
+          servicePort: 80
+      - path: /nginx_status
+        backend:
+          serviceName: nginx-ingress
+          servicePort: 18080
