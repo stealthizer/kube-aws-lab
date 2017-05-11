@@ -12,6 +12,8 @@ To begin, source the aws account vars (useful script provided)
 
 Create a KMS key for kube-aws
 
+(Use --profile if haven't used export_aws.sh)
+
 ```
 aws kms create-key --description="kube-aws assets" --profile awsprofile
 
