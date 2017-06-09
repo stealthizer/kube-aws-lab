@@ -1,0 +1,20 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        name: web
+        app: demo
+        env: staging
+    spec:
+      containers:
+      - name: web
+        image: janakiramm/web
+        ports:
+        - containerPort: 5000
+          name: web-port
+          protocol: TCP
