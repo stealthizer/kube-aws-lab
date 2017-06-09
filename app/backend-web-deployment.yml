@@ -6,7 +6,6 @@ spec:
   replicas: 2
   template:
     metadata:
-      name: web
       labels:
         name: web
         app: demo
@@ -17,5 +16,5 @@ spec:
         image: janakiramm/web
         ports:
         - containerPort: 5000
-          name: http
+          name: web-port
           protocol: TCP

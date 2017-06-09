@@ -229,6 +229,8 @@ kubectl --kubeconfig=my-cluster/kubeconfig exec -it net-test-353103886-cbm9w -- 
 ```
 Creating the service we will expose it to the world
 ```
+kubectl --kubeconfig=my-cluster/kubeconfig create -f app/nginx-ingress-controller-service.yml
+
 kubectl --kubeconfig=my-cluster/kubeconfig get services nginx-ingress -o wide
 NAME            CLUSTER-IP   EXTERNAL-IP   PORT(S)                        AGE       SELECTOR
 nginx-ingress   10.3.0.32    <nodes>       80:30000/TCP,18080:32767/TCP   32s       app=nginx-ingress-lb
@@ -251,5 +253,11 @@ Annotations:
 Events:	<none>
 ```
 
-Remember to attach a security with access to the exposed port in order to test it!
+Attach a security group to the node exposing the Address above and you can test the endpoint from outside amazon!
 
+```
+curl -H Host:kubertest.domain.test http://XXX.XXX.XXX.XXX:30000/
+curl -H Host:kubertest.domain.test http://XXX.XXX.XXX.XXX:30000/random
+curl -H Host:kubertest.domain.test http://XXX.XXX.XXX.XXX:30000/nginx_status
+
+```
